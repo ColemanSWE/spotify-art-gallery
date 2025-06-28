@@ -25,11 +25,11 @@ router.get('/auth/callback', async (req: Request, res: Response) => {
     const { code, state, error } = req.query;
 
     if (error) {
-      return res.redirect(`${process.env.FRONTEND_URL}/auth/error?error=${error}`);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://127.0.0.1:3000'}/auth/error?error=${error}`);
     }
 
     if (!code) {
-      return res.redirect(`${process.env.FRONTEND_URL}/auth/error?error=missing_code`);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://127.0.0.1:3000'}/auth/error?error=missing_code`);
     }
 
     const tokenResponse = await spotifyService.exchangeCodeForTokens(code as string);
@@ -54,11 +54,11 @@ router.get('/auth/callback', async (req: Request, res: Response) => {
       });
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://127.0.0.1:3000';
     res.redirect(`${frontendUrl}/auth/success?userId=${user.id}`);
   } catch (error) {
     console.error('Error in Spotify callback:', error);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://127.0.0.1:3000';
     res.redirect(`${frontendUrl}/auth/error?error=callback_failed`);
   }
 });
