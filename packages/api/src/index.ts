@@ -4,6 +4,7 @@ import sequelize from './config/database';
 import userRoutes from './routes/userRoutes';
 import galleryRoutes from './routes/galleryRoutes';
 import artworkRoutes from './routes/artworkRoutes';
+import spotifyRoutes from './routes/spotifyRoutes';
 import { errorHandler } from './middleware/error';
 import cors from 'cors';
 import { Server } from 'http';
@@ -11,7 +12,7 @@ import { Server } from 'http';
 dotenv.config();
 
 const app = express();
-const PORT = parseInt(process.env.PORT || '3000', 10);
+const PORT = parseInt(process.env.PORT || '3001', 10);
 
 app.use(cors());
 
@@ -44,6 +45,7 @@ const stopServer = (): Promise<void> => {
 app.use('/api/users', userRoutes);
 app.use('/api/artworks', artworkRoutes);
 app.use('/api/galleries', galleryRoutes);
+app.use('/api/spotify', spotifyRoutes);
 
 app.use(errorHandler);
 

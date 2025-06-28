@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
 
-export const authMiddleware = async (
+export const authenticateToken = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -29,3 +29,5 @@ export const authMiddleware = async (
     res.status(401).json({ message: 'Invalid token' });
   }
 };
+
+export const authMiddleware = authenticateToken;

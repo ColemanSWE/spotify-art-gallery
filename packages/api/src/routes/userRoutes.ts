@@ -42,6 +42,11 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid email or password' });
     }
 
+    // Check if user has a password (might be Spotify-only user)
+    if (!user.password) {
+      return res.status(400).json({ message: 'Please login with Spotify' });
+    }
+
     // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {

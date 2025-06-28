@@ -5,12 +5,16 @@ interface UserAttributes {
   id: number;
   username: string;
   email: string;
-  password: string;
+  password?: string;
+  spotifyId?: string;
+  spotifyAccessToken?: string;
+  spotifyRefreshToken?: string;
+  spotifyTokenExpiry?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-interface UserCreationAttributes extends Optional<UserAttributes, 'id'> {}
+interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'password'> {}
 
 class User
   extends Model<UserAttributes, UserCreationAttributes>
@@ -19,7 +23,11 @@ class User
   public id!: number;
   public username!: string;
   public email!: string;
-  public password!: string;
+  public password?: string;
+  public spotifyId?: string;
+  public spotifyAccessToken?: string;
+  public spotifyRefreshToken?: string;
+  public spotifyTokenExpiry?: Date;
 
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -43,7 +51,24 @@ User.init(
     },
     password: {
       type: DataTypes.STRING(128),
-      allowNull: false,
+      allowNull: true,
+    },
+    spotifyId: {
+      type: DataTypes.STRING(128),
+      allowNull: true,
+      unique: true,
+    },
+    spotifyAccessToken: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    spotifyRefreshToken: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    spotifyTokenExpiry: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
   },
   {
