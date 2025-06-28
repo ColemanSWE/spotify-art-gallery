@@ -1,0 +1,24 @@
+{
+  "name": "spotify-3d-art-gallery",
+  "version": "1.0.0",
+  "description": "A 3D art gallery app that displays user's top Spotify albums as 3D assets with album covers as textures",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:frontend\"",
+    "dev:api": "npm run dev --workspace=packages/api",
+    "dev:frontend": "npm run start --workspace=packages/frontend",
+    "build": "npm run build --workspace=packages/api && npm run build --workspace=packages/frontend",
+    "test": "npm run test --workspace=packages/api && npm run test --workspace=packages/frontend",
+    "install:all": "npm install",
+    "clean": "npm run clean --workspace=packages/api && npm run clean --workspace=packages/frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": ["spotify", "3d", "art", "gallery", "music", "visualization"],
+  "author": "ColemanSWE",
+  "license": "MIT"
+} 
