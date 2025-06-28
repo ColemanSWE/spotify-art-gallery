@@ -89,6 +89,7 @@ const SpotifyGalleryScene: React.FC<SpotifyGallerySceneProps> = ({ onAlbumClick 
   const [albums, setAlbums] = useState<SpotifyAlbum[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [timeRange, setTimeRange] = useState<'short_term' | 'medium_term' | 'long_term'>('medium_term');
 
   useEffect(() => {
     if (lightRef.current) {
@@ -107,57 +108,71 @@ const SpotifyGalleryScene: React.FC<SpotifyGallerySceneProps> = ({ onAlbumClick 
         setLoading(true);
         setError(null);
         
-        // Note: This is a simplified version. In production, you'd need a proper JWT token
-        // For now, we'll make the call without authentication to demonstrate the flow
-        // You'll need to implement JWT token generation for the userId
+        const jwtToken = localStorage.getItem('jwtToken');
         
-        // Temporary mock data for demonstration
-        const mockAlbums: SpotifyAlbum[] = [
-          {
-            id: 'mock1',
-            name: 'Sample Album 1',
-            artists: [{ id: 'artist1', name: 'Sample Artist' }],
-            images: [{ url: process.env.PUBLIC_URL + '/a4044058454_65.jpg', height: 640, width: 640 }],
-            release_date: '2023-01-01',
-            total_tracks: 12,
-            external_urls: { spotify: 'https://open.spotify.com' }
-          },
-          {
-            id: 'mock2',
-            name: 'Sample Album 2',
-            artists: [{ id: 'artist2', name: 'Another Artist' }],
-            images: [{ url: process.env.PUBLIC_URL + '/a4044058454_65.jpg', height: 640, width: 640 }],
-            release_date: '2023-02-01',
-            total_tracks: 10,
-            external_urls: { spotify: 'https://open.spotify.com' }
-          },
-          {
-            id: 'mock3',
-            name: 'Sample Album 3',
-            artists: [{ id: 'artist3', name: 'Third Artist' }],
-            images: [{ url: process.env.PUBLIC_URL + '/a4044058454_65.jpg', height: 640, width: 640 }],
-            release_date: '2023-03-01',
-            total_tracks: 8,
-            external_urls: { spotify: 'https://open.spotify.com' }
-          }
-        ];
-        
-        setAlbums(mockAlbums);
-        
-        // TODO: Replace with actual API call once JWT token system is implemented
-        // const fetchedAlbums = await ApiService.getTopAlbums(jwtToken, 'medium_term', 12);
-        // setAlbums(fetchedAlbums);
+        if (jwtToken) {
+          // Use real Spotify data
+          const fetchedAlbums = await ApiService.getTopAlbums(jwtToken, timeRange, 12);
+          setAlbums(fetchedAlbums);
+        } else {
+          // Fallback to mock data if no token
+          console.warn('No JWT token found, using mock data');
+          const mockAlbums: SpotifyAlbum[] = [
+            {
+              id: 'mock1',
+              name: 'Sample Album 1',
+              artists: [{ id: 'artist1', name: 'Sample Artist' }],
+              images: [{ url: process.env.PUBLIC_URL + '/a4044058454_65.jpg', height: 640, width: 640 }],
+              release_date: '2023-01-01',
+              total_tracks: 12,
+              external_urls: { spotify: 'https://open.spotify.com' }
+            },
+            {
+              id: 'mock2',
+              name: 'Sample Album 2',
+              artists: [{ id: 'artist2', name: 'Another Artist' }],
+              images: [{ url: process.env.PUBLIC_URL + '/a4044058454_65.jpg', height: 640, width: 640 }],
+              release_date: '2023-02-01',
+              total_tracks: 10,
+              external_urls: { spotify: 'https://open.spotify.com' }
+            },
+            {
+              id: 'mock3',
+              name: 'Sample Album 3',
+              artists: [{ id: 'artist3', name: 'Third Artist' }],
+              images: [{ url: process.env.PUBLIC_URL + '/a4044058454_65.jpg', height: 640, width: 640 }],
+              release_date: '2023-03-01',
+              total_tracks: 8,
+              external_urls: { spotify: 'https://open.spotify.com' }
+            }
+          ];
+          setAlbums(mockAlbums);
+        }
         
       } catch (err) {
         console.error('Failed to fetch albums:', err);
         setError('Failed to load your albums. Please try again.');
+        
+        // Fallback to mock data on error
+        const mockAlbums: SpotifyAlbum[] = [
+          {
+            id: 'mock1',
+            name: 'Demo Album (Error Fallback)',
+            artists: [{ id: 'artist1', name: 'Demo Artist' }],
+            images: [{ url: process.env.PUBLIC_URL + '/a4044058454_65.jpg', height: 640, width: 640 }],
+            release_date: '2023-01-01',
+            total_tracks: 12,
+            external_urls: { spotify: 'https://open.spotify.com' }
+          }
+        ];
+        setAlbums(mockAlbums);
       } finally {
         setLoading(false);
       }
     };
 
     fetchAlbums();
-  }, [isAuthenticated, userId]);
+  }, [isAuthenticated, userId, timeRange]);
 
   const handleAlbumClick = (album: SpotifyAlbum) => {
     console.log('Album clicked:', album);
@@ -217,7 +232,36 @@ const SpotifyGalleryScene: React.FC<SpotifyGallerySceneProps> = ({ onAlbumClick 
   const positions = generatePositions(albums.length);
 
   return (
-    <div style={{ height: '100vh', backgroundColor: '#0a0a0a' }}>
+    <div style={{ height: '100vh', backgroundColor: '#0a0a0a', position: 'relative' }}>
+      {/* Time Range Selector */}
+      <div style={{
+        position: 'absolute',
+        top: '20px',
+        left: '20px',
+        zIndex: 1000,
+        display: 'flex',
+        gap: '10px',
+        flexDirection: 'column'
+      }}>
+        <label style={{ color: 'white', fontSize: '14px', marginBottom: '5px' }}>Time Range:</label>
+        <select
+          value={timeRange}
+          onChange={(e) => setTimeRange(e.target.value as any)}
+          style={{
+            backgroundColor: '#2a2a2a',
+            color: 'white',
+            border: '1px solid #444',
+            borderRadius: '5px',
+            padding: '8px 12px',
+            fontSize: '14px'
+          }}
+        >
+          <option value="short_term">Last 4 weeks</option>
+          <option value="medium_term">Last 6 months</option>
+          <option value="long_term">All time</option>
+        </select>
+      </div>
+
       <Canvas camera={{ position: [0, 2, 8], fov: 75 }}>
         <ambientLight intensity={0.3} />
         <pointLight ref={lightRef} intensity={1} />

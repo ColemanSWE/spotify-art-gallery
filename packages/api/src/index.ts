@@ -5,6 +5,7 @@ import userRoutes from './routes/userRoutes';
 import galleryRoutes from './routes/galleryRoutes';
 import artworkRoutes from './routes/artworkRoutes';
 import spotifyRoutes from './routes/spotifyRoutes';
+import authRoutes from './routes/authRoutes';
 import { errorHandler } from './middleware/error';
 import cors from 'cors';
 import { Server } from 'http';
@@ -46,6 +47,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/artworks', artworkRoutes);
 app.use('/api/galleries', galleryRoutes);
 app.use('/api/spotify', spotifyRoutes);
+app.use('/api/auth', authRoutes);
 
 app.use(errorHandler);
 

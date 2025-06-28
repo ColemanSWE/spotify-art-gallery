@@ -16,6 +16,11 @@ export class ApiService {
     return response.data;
   }
 
+  static async generateToken(userId: string): Promise<{ token: string; user: any }> {
+    const response = await apiClient.post('/auth/token', { userId });
+    return response.data;
+  }
+
   static async getSpotifyProfile(token: string): Promise<SpotifyUser> {
     const response = await apiClient.get('/spotify/profile', {
       headers: { Authorization: `Bearer ${token}` }

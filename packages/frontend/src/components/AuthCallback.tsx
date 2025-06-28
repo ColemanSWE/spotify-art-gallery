@@ -8,7 +8,7 @@ const AuthCallback: React.FC = () => {
   const { setUserId } = useAuth();
 
   useEffect(() => {
-    const handleCallback = () => {
+    const handleCallback = async () => {
       const urlParams = new URLSearchParams(location.search);
       const userId = urlParams.get('userId');
       const error = urlParams.get('error');
@@ -21,10 +21,13 @@ const AuthCallback: React.FC = () => {
       }
 
       if (userId) {
-        setUserId(userId);
-        // For now, we'll navigate to gallery without JWT token
-        // In a production app, you'd want to generate a JWT token for this userId
-        navigate('/gallery');
+        try {
+          await setUserId(userId);
+          navigate('/gallery');
+        } catch (error) {
+          console.error('Failed to set user ID:', error);
+          navigate('/?error=auth_failed');
+        }
       } else {
         console.error('No userId received from callback');
         navigate('/?error=no_user_id');

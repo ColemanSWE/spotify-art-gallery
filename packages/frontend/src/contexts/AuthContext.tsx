@@ -5,7 +5,7 @@ import ApiService from '../services/apiService';
 interface AuthContextType extends AuthState {
   login: () => Promise<void>;
   logout: () => void;
-  setUserId: (userId: string) => void;
+  setUserId: (userId: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -48,13 +48,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
   };
 
-  const setUserId = (userId: string) => {
-    localStorage.setItem('userId', userId);
-    setAuthState(prev => ({
-      ...prev,
-      userId,
-      isAuthenticated: true,
-    }));
+  const setUserId = async (userId: string) => {
+    try {
+      localStorage.setItem('userId', userId);
+      
+      // Generate JWT token for API calls
+      const { token, user } = await ApiService.generateToken(userId);
+      localStorage.setItem('jwtToken', token);
+      
+      setAuthState(prev => ({
+        ...prev,
+        userId,
+        user,
+        isAuthenticated: true,
+      }));
+    } catch (error) {
+      console.error('Failed to generate token:', error);
+      // Still mark as authenticated but without token
+      setAuthState(prev => ({
+        ...prev,
+        userId,
+        isAuthenticated: true,
+      }));
+    }
   };
 
   // Load authentication state on app start
