@@ -10,38 +10,16 @@ import spotifyRoutes from './routes/spotifyRoutes';
 import authRoutes from './routes/authRoutes';
 import { errorHandler } from './middleware/error';
 import cors from 'cors';
-import { Server } from 'http';
 
 const app = express();
-const PORT = parseInt(process.env.PORT || '3001', 10);
 
 app.use(cors());
-
 app.use(express.json());
 
-let server: Server;
-
-const startServer = async (port: number = PORT): Promise<Server> => {
-  await sequelize.sync();
-  server = app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-  });
-  return server;
-};
-
-const stopServer = (): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    if (server) {
-      server.close((err) => {
-        if (err) return reject(err);
-        console.log('Server closed');
-        resolve();
-      });
-    } else {
-      resolve();
-    }
-  });
-};
+// Initialize database
+sequelize.sync().catch(err => {
+  console.error('Database sync failed:', err);
+});
 
 app.use('/api/users', userRoutes);
 app.use('/api/artworks', artworkRoutes);
@@ -55,11 +33,13 @@ app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to the Virtual Art Gallery API');
 });
 
-if (process.env.NODE_ENV !== 'test') {
-  startServer().catch(err => {
-    console.error('Failed to start server:', err);
-    process.exit(1);
+// For local development
+if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
+  const PORT = parseInt(process.env.PORT || '3001', 10);
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
   });
 }
 
-export { app, startServer, stopServer };
+// Export for Vercel
+export default app;

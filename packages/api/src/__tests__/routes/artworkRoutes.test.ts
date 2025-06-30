@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { app, startServer, stopServer } from '../../index';
+import app from '../../index';
 import sequelize from '../../config/database';
 import User from '../../models/User';
 import Artwork from '../../models/Artwork';
@@ -7,7 +7,6 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 let token: string;
-let serverInstance: any;
 
 beforeAll(async () => {
   console.log('Syncing database...');
@@ -33,15 +32,11 @@ beforeAll(async () => {
     createdBy: user.id,
   });
 
-  console.log('Starting server...');
-  serverInstance = await startServer(0); // 0 lets the OS assign a random available port
-  console.log('Server started');
+  console.log('Test setup complete');
 });
 
 afterAll(async () => {
-  console.log('Stopping server...');
-  await stopServer();
-  console.log('Server stopped');
+  console.log('Closing database connection...');
   await sequelize.close();
   console.log('Database connection closed');
 });
@@ -49,7 +44,7 @@ afterAll(async () => {
 describe('Artwork Routes', () => {
   it('should upload a new artwork', async () => {
     console.log('Uploading artwork...');
-    const response = await request(serverInstance)
+    const response = await request(app)
       .post('/api/artworks/upload')
       .set('Authorization', `Bearer ${token}`)
       .field('title', 'Test Artwork 2')
@@ -63,7 +58,7 @@ describe('Artwork Routes', () => {
 
   it('should fetch all artworks', async () => {
     console.log('Fetching artworks...');
-    const response = await request(serverInstance).get('/api/artworks');
+    const response = await request(app).get('/api/artworks');
     expect(response.status).toBe(200);
     expect(response.body.length).toBeGreaterThan(0);
     console.log('Artworks fetched');
@@ -72,7 +67,7 @@ describe('Artwork Routes', () => {
   it('should delete an artwork', async () => {
     console.log('Deleting artwork...');
     const artwork = await Artwork.findOne();
-    const response = await request(serverInstance)
+    const response = await request(app)
       .delete(`/api/artworks/${artwork?.id}`)
       .set('Authorization', `Bearer ${token}`);
 

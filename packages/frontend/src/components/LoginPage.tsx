@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { ApiService } from '../services/apiService';
 
 const LoginPage: React.FC = () => {
   const location = useLocation();
@@ -28,8 +29,7 @@ const LoginPage: React.FC = () => {
       // Clear any previous session data first
       logout();
       
-      const response = await fetch('http://127.0.0.1:3001/api/spotify/auth');
-      const data = await response.json();
+      const data = await ApiService.getSpotifyAuthUrl();
       
       if (data.authUrl) {
         window.location.href = data.authUrl;

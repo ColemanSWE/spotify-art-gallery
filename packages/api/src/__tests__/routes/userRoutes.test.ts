@@ -1,6 +1,6 @@
 import request from 'supertest';
 import sequelize from '../../config/database';
-import { app, startServer, stopServer } from '../../index';
+import app from '../../index';
 import User from '../../models/User';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -9,7 +9,6 @@ import jwt from 'jsonwebtoken';
 require('dotenv').config();
 
 let token: string;
-let serverInstance: any;
 
 beforeAll(async () => {
   console.log('Syncing database...');
@@ -31,15 +30,11 @@ beforeAll(async () => {
     expiresIn: '1h',
   });
 
-  console.log('Starting server...');
-  serverInstance = await startServer(0); // 0 lets the OS assign a random available port
-  console.log('Server started');
+  console.log('Test setup complete');
 });
 
 afterAll(async () => {
-  console.log('Stopping server...');
-  await stopServer();
-  console.log('Server stopped');
+  console.log('Closing database connection...');
   await sequelize.close();
   console.log('Database connection closed');
 });
@@ -47,7 +42,7 @@ afterAll(async () => {
 describe('User Routes', () => {
   it('should register a new user', async () => {
     console.log('Registering a new user...');
-    const response = await request(serverInstance)
+    const response = await request(app)
       .post('/api/users/register')
       .send({
         username: 'newuser',
@@ -62,7 +57,7 @@ describe('User Routes', () => {
 
   it('should login a user', async () => {
     console.log('Logging in user...');
-    const response = await request(serverInstance)
+    const response = await request(app)
       .post('/api/users/login')
       .send({
         email: 'testuser@example.com',
@@ -76,7 +71,7 @@ describe('User Routes', () => {
 
   it('should not login a user with incorrect password', async () => {
     console.log('Attempting to login with incorrect password...');
-    const response = await request(serverInstance)
+    const response = await request(app)
       .post('/api/users/login')
       .send({
         email: 'testuser@example.com',
@@ -90,7 +85,7 @@ describe('User Routes', () => {
 
   it('should not login a non-existent user', async () => {
     console.log('Attempting to login with non-existent user...');
-    const response = await request(serverInstance)
+    const response = await request(app)
       .post('/api/users/login')
       .send({
         email: 'nonexistent@example.com',
