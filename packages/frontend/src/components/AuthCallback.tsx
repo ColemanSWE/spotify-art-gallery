@@ -12,6 +12,7 @@ const AuthCallback: React.FC = () => {
     const handleCallback = async () => {
       const urlParams = new URLSearchParams(location.search);
       const userId = urlParams.get('userId');
+      const tempAuth = urlParams.get('temp');
       const callbackError = urlParams.get('error');
 
       if (callbackError) {
@@ -33,6 +34,20 @@ const AuthCallback: React.FC = () => {
           setError('auth_failed');
           setTimeout(() => {
             navigate('/?error=auth_failed');
+          }, 3000);
+        }
+      } else if (tempAuth === 'true') {
+        // Handle the case where database is not available
+        console.log('Database not available - proceeding with demo mode');
+        try {
+          // Set a temporary demo user ID
+          await setUserId('demo-user');
+          navigate('/gallery?demo=true');
+        } catch (error) {
+          console.error('Failed to set demo user:', error);
+          setError('demo_failed');
+          setTimeout(() => {
+            navigate('/?error=demo_failed');
           }, 3000);
         }
       } else {
@@ -147,6 +162,9 @@ const AuthCallback: React.FC = () => {
           }} />
           <p style={{ fontWeight: 700, textTransform: 'uppercase' }}>
             CONNECTING YOUR MUSIC LIBRARY...
+          </p>
+          <p style={{ fontWeight: 400, fontSize: '12px', marginTop: '10px' }}>
+            (DEMO MODE - LIMITED FUNCTIONALITY)
           </p>
         </div>
       </div>
