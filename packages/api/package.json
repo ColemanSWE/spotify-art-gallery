@@ -5,6 +5,8 @@
   "scripts": {
     "test": "jest",
     "start": "ts-node --files --project tsconfig.json src/index.ts",
+    "build": "tsc",
+    "dev": "ts-node --files --project tsconfig.json src/index.ts",
     "format": "prettier --write \"src/**/*.ts\""
   },
   "keywords": [],
