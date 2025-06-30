@@ -5,6 +5,11 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 
 console.log('Starting Express app initialization...');
+console.log('Environment variables:', {
+  NODE_ENV: process.env.NODE_ENV,
+  VERCEL: process.env.VERCEL,
+  FRONTEND_URL: process.env.FRONTEND_URL
+});
 
 let sequelize: any;
 try {
@@ -76,6 +81,22 @@ app.get('/', (req: Request, res: Response) => {
 
 app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+app.get('/debug', (req: Request, res: Response) => {
+  res.json({ 
+    message: 'Debug endpoint working',
+    url: req.url,
+    method: req.method,
+    originalUrl: req.originalUrl,
+    baseUrl: req.baseUrl,
+    path: req.path,
+    routes: {
+      spotifyRoutes: !!spotifyRoutes,
+      userRoutes: !!userRoutes,
+      authRoutes: !!authRoutes
+    }
+  });
 });
 
 // For local development
