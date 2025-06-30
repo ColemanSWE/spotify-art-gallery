@@ -13,7 +13,25 @@ import cors from 'cors';
 
 const app = express();
 
-app.use(cors());
+// Configure CORS to allow frontend domain
+const allowedOrigins = [
+  'http://localhost:3000', // Local development
+  'https://spotify-art-gallery-frontend.vercel.app', // Production frontend
+];
+
+// Add frontend URL from environment if it exists
+if (process.env.FRONTEND_URL) {
+  allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
+const corsOptions = {
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Initialize database
