@@ -1,5 +1,8 @@
 import { Sequelize } from 'sequelize';
 
+// Explicitly require pg to ensure it's available for Sequelize in serverless environment
+require('pg');
+
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL environment variable is required but not set');
 }
