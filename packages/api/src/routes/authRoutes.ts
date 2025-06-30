@@ -1,6 +1,16 @@
 import express, { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import User from '../models/User';
+import sequelize from '../config/database';
+
+// Conditionally import User model only if database is available
+let User: any = null;
+if (sequelize) {
+  try {
+    User = require('../models/User').default;
+  } catch (error) {
+    console.error('Failed to import User model:', error);
+  }
+}
 
 const router = express.Router();
 
@@ -11,6 +21,25 @@ router.post('/token', async (req: Request, res: Response) => {
     
     if (!userId) {
       return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    // If no database, create a demo token for demo users
+    if (!User) {
+      console.log('Database not available - generating demo token for:', userId);
+      const token = jwt.sign(
+        { userId, demo: true },
+        process.env.JWT_SECRET || 'fallback_secret',
+        { expiresIn: '24h' }
+      );
+
+      return res.json({ 
+        token, 
+        user: { 
+          id: userId, 
+          username: 'Demo User', 
+          email: 'demo@example.com' 
+        } 
+      });
     }
 
     const user = await User.findByPk(userId);
