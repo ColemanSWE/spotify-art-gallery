@@ -1,6 +1,6 @@
 {
   "name": "art-gallery-api",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node --files --project tsconfig.json src/index.ts",
