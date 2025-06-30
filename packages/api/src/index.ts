@@ -37,6 +37,7 @@ app.use(express.json());
 // Initialize database
 sequelize.sync().catch(err => {
   console.error('Database sync failed:', err);
+  // Don't crash the app, just log the error
 });
 
 app.use('/api/users', userRoutes);
@@ -49,6 +50,10 @@ app.use(errorHandler);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to the Virtual Art Gallery API');
+});
+
+app.get('/health', (req: Request, res: Response) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
 // For local development
