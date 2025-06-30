@@ -3,4 +3,4 @@ module.exports = {
   testEnvironment: 'node',
   testMatch: ['**/__tests__/**/*.ts'],
   setupFiles: ['<rootDir>/jest.setup.ts'],
-};
+}
