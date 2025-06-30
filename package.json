@@ -11,6 +11,7 @@
     "dev:api": "npm run dev --workspace=packages/api",
     "dev:frontend": "npm run start --workspace=packages/frontend",
     "build": "npm run build --workspace=packages/api && npm run build --workspace=packages/frontend",
+    "vercel-build": "npm run build --workspace=packages/frontend",
     "test": "npm run test --workspace=packages/api && npm run test --workspace=packages/frontend",
     "install:all": "npm install",
     "clean": "npm run clean --workspace=packages/api && npm run clean --workspace=packages/frontend"
