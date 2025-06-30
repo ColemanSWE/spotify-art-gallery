@@ -5,7 +5,7 @@
       "src": "packages/api/src/index.ts",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["packages/api/src/**"]
+        "includeFiles": ["packages/api/**"]
       }
     },
     {
