@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional } from 'sequelize';
+import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
 import sequelize from '../config/database';
 
 interface UserAttributes {
@@ -33,48 +33,51 @@ class User
   public readonly updatedAt!: Date;
 }
 
-User.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
+// Only initialize the model if sequelize is available
+if (sequelize) {
+  User.init(
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      username: {
+        type: DataTypes.STRING(128),
+        allowNull: false,
+      },
+      email: {
+        type: DataTypes.STRING(128),
+        allowNull: false,
+        unique: true,
+      },
+      password: {
+        type: DataTypes.STRING(128),
+        allowNull: true,
+      },
+      spotifyId: {
+        type: DataTypes.STRING(128),
+        allowNull: true,
+        unique: true,
+      },
+      spotifyAccessToken: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      spotifyRefreshToken: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      spotifyTokenExpiry: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
     },
-    username: {
-      type: DataTypes.STRING(128),
-      allowNull: false,
+    {
+      sequelize,
+      tableName: 'users',
     },
-    email: {
-      type: DataTypes.STRING(128),
-      allowNull: false,
-      unique: true,
-    },
-    password: {
-      type: DataTypes.STRING(128),
-      allowNull: true,
-    },
-    spotifyId: {
-      type: DataTypes.STRING(128),
-      allowNull: true,
-      unique: true,
-    },
-    spotifyAccessToken: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    spotifyRefreshToken: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    spotifyTokenExpiry: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-  },
-  {
-    sequelize,
-    tableName: 'users',
-  },
-);
+  );
+}
 
 export default User;
