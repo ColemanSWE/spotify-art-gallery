@@ -2,36 +2,14 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import express, { Request, Response } from 'express';
+import sequelize from './config/database';
+import userRoutes from './routes/userRoutes';
+import galleryRoutes from './routes/galleryRoutes';
+import artworkRoutes from './routes/artworkRoutes';
+import spotifyRoutes from './routes/spotifyRoutes';
+import authRoutes from './routes/authRoutes';
+import { errorHandler } from './middleware/error';
 import cors from 'cors';
-
-console.log('Starting Express app initialization...');
-console.log('Environment variables:', {
-  NODE_ENV: process.env.NODE_ENV,
-  VERCEL: process.env.VERCEL,
-  FRONTEND_URL: process.env.FRONTEND_URL
-});
-
-let sequelize: any;
-try {
-  sequelize = require('./config/database').default;
-  console.log('Database imported successfully');
-} catch (error) {
-  console.error('Failed to import database:', error);
-}
-
-let userRoutes: any, galleryRoutes: any, artworkRoutes: any, spotifyRoutes: any, authRoutes: any, errorHandler: any;
-
-try {
-  userRoutes = require('./routes/userRoutes').default;
-  galleryRoutes = require('./routes/galleryRoutes').default;
-  artworkRoutes = require('./routes/artworkRoutes').default;
-  spotifyRoutes = require('./routes/spotifyRoutes').default;
-  authRoutes = require('./routes/authRoutes').default;
-  errorHandler = require('./middleware/error').errorHandler;
-  console.log('All routes imported successfully');
-} catch (error) {
-  console.error('Failed to import routes:', error);
-}
 
 const app = express();
 
@@ -57,23 +35,17 @@ app.use(cors(corsOptions));
 app.use(express.json());
 
 // Initialize database
-if (sequelize) {
-  sequelize.sync().catch((err: any) => {
-    console.error('Database sync failed:', err);
-    // Don't crash the app, just log the error
-  });
-} else {
-  console.log('Skipping database sync - sequelize not available');
-}
+sequelize.sync().catch(err => {
+  console.error('Database sync failed:', err);
+});
 
-// Register routes only if they were imported successfully
-if (userRoutes) app.use('/api/users', userRoutes);
-if (artworkRoutes) app.use('/api/artworks', artworkRoutes);
-if (galleryRoutes) app.use('/api/galleries', galleryRoutes);
-if (spotifyRoutes) app.use('/api/spotify', spotifyRoutes);
-if (authRoutes) app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/artworks', artworkRoutes);
+app.use('/api/galleries', galleryRoutes);
+app.use('/api/spotify', spotifyRoutes);
+app.use('/api/auth', authRoutes);
 
-if (errorHandler) app.use(errorHandler);
+app.use(errorHandler);
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to the Virtual Art Gallery API');
@@ -83,21 +55,7 @@ app.get('/health', (req: Request, res: Response) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-app.get('/debug', (req: Request, res: Response) => {
-  res.json({ 
-    message: 'Debug endpoint working',
-    url: req.url,
-    method: req.method,
-    originalUrl: req.originalUrl,
-    baseUrl: req.baseUrl,
-    path: req.path,
-    routes: {
-      spotifyRoutes: !!spotifyRoutes,
-      userRoutes: !!userRoutes,
-      authRoutes: !!authRoutes
-    }
-  });
-});
+
 
 // For local development
 if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {

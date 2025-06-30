@@ -1,17 +1,7 @@
 import express, { Request, Response } from 'express';
 import spotifyService from '../services/spotifyService';
 import { authenticateToken } from '../middleware/auth';
-import sequelize from '../config/database';
-
-// Conditionally import User model only if database is available
-let User: any = null;
-if (sequelize) {
-  try {
-    User = require('../models/User').default;
-  } catch (error) {
-    console.error('Failed to import User model:', error);
-  }
-}
+import User from '../models/User';
 
 const router = express.Router();
 
@@ -34,20 +24,13 @@ router.get('/auth', async (req: Request, res: Response) => {
 router.get('/auth/callback', async (req: Request, res: Response) => {
   try {
     const { code, state, error } = req.query;
-    const frontendUrl = process.env.FRONTEND_URL || 'http://127.0.0.1:3000';
 
     if (error) {
-      return res.redirect(`${frontendUrl}/auth/error?error=${error}`);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://127.0.0.1:3000'}/auth/error?error=${error}`);
     }
 
     if (!code) {
-      return res.redirect(`${frontendUrl}/auth/error?error=missing_code`);
-    }
-
-    // If no database, just redirect with success but no user data
-    if (!User) {
-      console.log('Database not available - redirecting without storing user data');
-      return res.redirect(`${frontendUrl}/auth/success?temp=true`);
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://127.0.0.1:3000'}/auth/error?error=missing_code`);
     }
 
     const tokenResponse = await spotifyService.exchangeCodeForTokens(code as string);
@@ -72,6 +55,7 @@ router.get('/auth/callback', async (req: Request, res: Response) => {
       });
     }
 
+    const frontendUrl = process.env.FRONTEND_URL || 'http://127.0.0.1:3000';
     res.redirect(`${frontendUrl}/auth/success?userId=${user.id}`);
   } catch (error) {
     console.error('Error in Spotify callback:', error);
@@ -82,10 +66,6 @@ router.get('/auth/callback', async (req: Request, res: Response) => {
 
 router.get('/profile', authenticateToken, async (req: Request, res: Response) => {
   try {
-    if (!User) {
-      return res.status(503).json({ error: 'Database not available' });
-    }
-
     const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ error: 'User not authenticated' });
@@ -128,10 +108,6 @@ router.get('/profile', authenticateToken, async (req: Request, res: Response) =>
 
 router.get('/top-albums', authenticateToken, async (req: Request, res: Response) => {
   try {
-    if (!User) {
-      return res.status(503).json({ error: 'Database not available' });
-    }
-
     const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ error: 'User not authenticated' });
@@ -177,10 +153,6 @@ router.get('/top-albums', authenticateToken, async (req: Request, res: Response)
 
 router.get('/album/:id', authenticateToken, async (req: Request, res: Response) => {
   try {
-    if (!User) {
-      return res.status(503).json({ error: 'Database not available' });
-    }
-
     const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ error: 'User not authenticated' });

@@ -28,41 +28,38 @@ class Artwork
   public readonly updatedAt!: Date;
 }
 
-// Only initialize the model if sequelize is available
-if (sequelize) {
-  Artwork.init(
-    {
-      id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-      },
-      title: {
-        type: DataTypes.STRING(128),
-        allowNull: false,
-      },
-      description: {
-        type: DataTypes.STRING(256),
-        allowNull: false,
-      },
-      imageUrl: {
-        type: DataTypes.STRING(256),
-        allowNull: false,
-      },
-      createdBy: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: User,
-          key: 'id',
-        },
+Artwork.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    title: {
+      type: DataTypes.STRING(128),
+      allowNull: false,
+    },
+    description: {
+      type: DataTypes.STRING(256),
+      allowNull: false,
+    },
+    imageUrl: {
+      type: DataTypes.STRING(256),
+      allowNull: false,
+    },
+    createdBy: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: User,
+        key: 'id',
       },
     },
-    {
-      sequelize,
-      tableName: 'artworks',
-    },
-  );
-}
+  },
+  {
+    sequelize,
+    tableName: 'artworks',
+  },
+);
 
 export default Artwork;

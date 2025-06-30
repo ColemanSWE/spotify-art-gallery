@@ -1,17 +1,14 @@
 import { Sequelize } from 'sequelize';
 
-let sequelize: Sequelize | null = null;
-
-// Disable database in serverless environment to avoid sqlite3 issues
-if (process.env.VERCEL) {
-  console.log('Running in Vercel - skipping database initialization');
-  sequelize = null;
-} else {
-  sequelize = new Sequelize({
-    dialect: 'sqlite',
-    storage: process.env.NODE_ENV === 'test' ? ':memory:' : './database.sqlite',
-    logging: false,
-  });
-}
+const sequelize = new Sequelize(process.env.DATABASE_URL || '', {
+  dialect: 'postgres',
+  dialectOptions: {
+    ssl: process.env.NODE_ENV === 'production' ? {
+      require: true,
+      rejectUnauthorized: false
+    } : false,
+  },
+  logging: false,
+});
 
 export default sequelize;
