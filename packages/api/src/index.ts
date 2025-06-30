@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import sequelize from './config/database';
 import userRoutes from './routes/userRoutes';
 import galleryRoutes from './routes/galleryRoutes';
@@ -10,6 +10,11 @@ import spotifyRoutes from './routes/spotifyRoutes';
 import authRoutes from './routes/authRoutes';
 import { errorHandler } from './middleware/error';
 import cors from 'cors';
+
+// Import models to ensure they are registered with Sequelize
+import './models/User';
+import './models/Artwork';
+import './models/Gallery';
 
 const app = express();
 
@@ -34,10 +39,50 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Initialize database
-sequelize.sync().catch(err => {
-  console.error('Database sync failed:', err);
-});
+// Database initialization state
+let dbInitialized = false;
+let dbInitPromise: Promise<void> | null = null;
+
+// Initialize database - create tables if they don't exist
+async function initializeDatabase(): Promise<void> {
+  if (dbInitialized) return;
+  
+  if (dbInitPromise) {
+    return dbInitPromise;
+  }
+
+  dbInitPromise = (async () => {
+    try {
+      await sequelize.authenticate();
+      console.log('Database connection has been established successfully.');
+      
+      // Sync models to create tables
+      await sequelize.sync({ alter: false, force: false });
+      console.log('Database tables have been synchronized.');
+      dbInitialized = true;
+    } catch (error) {
+      console.error('Unable to connect to the database or sync tables:', error);
+      dbInitPromise = null;
+      throw error;
+    }
+  })();
+
+  return dbInitPromise;
+}
+
+// Middleware to ensure database is initialized before handling requests
+async function ensureDbInitialized(req: Request, res: Response, next: NextFunction) {
+  try {
+    await initializeDatabase();
+    next();
+  } catch (error) {
+    console.error('Database initialization failed:', error);
+    res.status(500).json({ error: 'Database initialization failed' });
+  }
+}
+
+// Use the middleware for all routes
+app.use(ensureDbInitialized);
 
 app.use('/api/users', userRoutes);
 app.use('/api/artworks', artworkRoutes);
