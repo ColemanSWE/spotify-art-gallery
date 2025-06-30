@@ -5,7 +5,11 @@ import { authMiddleware } from '../middleware/auth';
 
 const router = Router();
 
-const upload = multer({ dest: 'uploads/' });
+// Use memory storage for serverless environments where file system is read-only
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 router.post(
   '/upload',
@@ -17,7 +21,9 @@ router.post(
       if (!req.file) {
         return res.status(400).send('Image file is required');
       }
-      const imageUrl = req.file.path;
+      // In serverless environment, store file info instead of path
+      // In production, you'd upload to cloud storage (S3, etc.) and store that URL
+      const imageUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
       const artwork = await Artwork.create({
         title,
         description,
@@ -26,6 +32,7 @@ router.post(
       });
       res.status(201).send('Artwork uploaded successfully');
     } catch (error) {
+      console.error('Artwork upload error:', error);
       res.status(400).send('Failed to upload artwork');
     }
   },
