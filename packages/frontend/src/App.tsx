@@ -7,39 +7,13 @@ import AuthCallback from './components/AuthCallback';
 import SpotifyGalleryScene from './components/SpotifyGalleryScene';
 
 const GalleryPage: React.FC = () => {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
-  return (
-    <div style={{ height: '100vh', position: 'relative' }}>
-      <div style={{
-        position: 'absolute',
-        top: '20px',
-        right: '20px',
-        zIndex: 1000,
-        display: 'flex',
-        gap: '10px'
-      }}>
-        <button
-          onClick={logout}
-          style={{
-            backgroundColor: '#ff4444',
-            color: 'white',
-            border: 'none',
-            padding: '10px 20px',
-            borderRadius: '5px',
-            cursor: 'pointer'
-          }}
-        >
-          Logout
-        </button>
-      </div>
-      <SpotifyGalleryScene />
-    </div>
-  );
+  return <SpotifyGalleryScene />;
 };
 
 const AppContent: React.FC = () => {

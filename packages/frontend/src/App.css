@@ -6,18 +6,58 @@ body {
 }
 
 .App {
-  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--brutal-white);
+  color: var(--brutal-black);
+  min-height: 100vh;
+  cursor: crosshair;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+/* Brutalist loading animation */
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-glitch 2s infinite;
+  }
+}
+
+@keyframes App-logo-glitch {
+  0%, 100% { transform: translate(0) rotate(0deg); }
+  25% { transform: translate(2px, -2px) rotate(180deg); }
+  50% { transform: translate(-2px, 2px) rotate(360deg); }
+  75% { transform: translate(2px, 2px) rotate(180deg); }
 }
 
 .App-header {
-  background-color: #282c34;
-  min-height: 10vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  background-color: var(--brutal-black);
+  padding: 20px;
+  color: var(--brutal-white);
+  text-align: center;
+  border: 4px solid var(--brutal-white);
+  box-shadow: 8px 8px 0px var(--brutal-white);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.App-link {
+  color: var(--brutal-yellow);
+  text-decoration: none;
+  font-weight: 700;
+  border: 2px solid var(--brutal-yellow);
+  padding: 8px 16px;
+  transition: all 0.2s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.App-link:hover {
+  background: var(--brutal-yellow);
+  color: var(--brutal-black);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px var(--brutal-black);
 }
 
 main {

@@ -1,22 +1,26 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setUserId } = useAuth();
+  const { setUserId, logout } = useAuth();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const handleCallback = async () => {
       const urlParams = new URLSearchParams(location.search);
       const userId = urlParams.get('userId');
-      const error = urlParams.get('error');
+      const callbackError = urlParams.get('error');
 
-      if (error) {
-        console.error('Authentication error:', error);
-        // Redirect to login with error message
-        navigate('/?error=' + error);
+      if (callbackError) {
+        console.error('Authentication error:', callbackError);
+        setError(callbackError);
+        // Wait a moment to show the error, then redirect
+        setTimeout(() => {
+          navigate('/?error=' + callbackError);
+        }, 3000);
         return;
       }
 
@@ -26,16 +30,83 @@ const AuthCallback: React.FC = () => {
           navigate('/gallery');
         } catch (error) {
           console.error('Failed to set user ID:', error);
-          navigate('/?error=auth_failed');
+          setError('auth_failed');
+          setTimeout(() => {
+            navigate('/?error=auth_failed');
+          }, 3000);
         }
       } else {
         console.error('No userId received from callback');
-        navigate('/?error=no_user_id');
+        setError('no_user_id');
+        setTimeout(() => {
+          navigate('/?error=no_user_id');
+        }, 3000);
       }
     };
 
     handleCallback();
   }, [location, navigate, setUserId]);
+
+  if (error) {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        backgroundColor: 'var(--brutal-red)',
+        color: 'var(--brutal-white)',
+        fontFamily: 'JetBrains Mono, monospace',
+        textAlign: 'center'
+      }}>
+        <div style={{ 
+          padding: '30px',
+          border: '4px solid var(--brutal-black)',
+          boxShadow: '8px 8px 0px var(--brutal-black)',
+          backgroundColor: 'var(--brutal-white)',
+          color: 'var(--brutal-black)',
+          marginBottom: '20px'
+        }}>
+          <h2 style={{ 
+            fontSize: '2rem', 
+            fontWeight: 700, 
+            textTransform: 'uppercase',
+            marginBottom: '15px'
+          }}>
+            ⚠️ AUTHENTICATION ERROR
+          </h2>
+          <p style={{ fontWeight: 700, marginBottom: '15px' }}>
+            SOMETHING WENT WRONG DURING SPOTIFY AUTHENTICATION
+          </p>
+          <p style={{ fontWeight: 700, fontSize: '14px' }}>
+            REDIRECTING YOU BACK TO LOGIN...
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            logout();
+            navigate('/');
+          }}
+          style={{
+            backgroundColor: 'var(--brutal-yellow)',
+            color: 'var(--brutal-black)',
+            border: '4px solid var(--brutal-black)',
+            boxShadow: '4px 4px 0px var(--brutal-black)',
+            padding: '15px 25px',
+            fontSize: '14px',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
+            cursor: 'pointer',
+            fontFamily: 'JetBrains Mono, monospace'
+          }}
+        >
+          GO BACK NOW
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -44,21 +115,40 @@ const AuthCallback: React.FC = () => {
       alignItems: 'center',
       justifyContent: 'center',
       height: '100vh',
-      backgroundColor: '#1a1a1a',
-      color: 'white'
+      backgroundColor: 'var(--brutal-black)',
+      color: 'var(--brutal-white)',
+      fontFamily: 'JetBrains Mono, monospace'
     }}>
       <div style={{ textAlign: 'center' }}>
-        <h2>Authenticating with Spotify...</h2>
-        <div style={{ 
-          width: '50px', 
-          height: '50px', 
-          border: '3px solid #1DB954',
-          borderTop: '3px solid transparent',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-          margin: '20px auto'
-        }} />
-        <p>Please wait while we connect your account.</p>
+        <div style={{
+          padding: '30px',
+          border: '4px solid var(--brutal-green)',
+          boxShadow: '8px 8px 0px var(--brutal-green)',
+          backgroundColor: 'var(--brutal-white)',
+          color: 'var(--brutal-black)',
+          marginBottom: '20px'
+        }}>
+          <h2 style={{ 
+            fontSize: '2rem', 
+            fontWeight: 700, 
+            textTransform: 'uppercase',
+            marginBottom: '15px'
+          }}>
+            🎵 AUTHENTICATING WITH SPOTIFY...
+          </h2>
+          <div style={{ 
+            width: '50px', 
+            height: '50px', 
+            border: '4px solid var(--brutal-green)',
+            borderTop: '4px solid transparent',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '20px auto'
+          }} />
+          <p style={{ fontWeight: 700, textTransform: 'uppercase' }}>
+            CONNECTING YOUR MUSIC LIBRARY...
+          </p>
+        </div>
       </div>
       <style>
         {`

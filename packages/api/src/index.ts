@@ -1,5 +1,7 @@
-import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
+dotenv.config();
+
+import express, { Request, Response } from 'express';
 import sequelize from './config/database';
 import userRoutes from './routes/userRoutes';
 import galleryRoutes from './routes/galleryRoutes';
@@ -9,8 +11,6 @@ import authRoutes from './routes/authRoutes';
 import { errorHandler } from './middleware/error';
 import cors from 'cors';
 import { Server } from 'http';
-
-dotenv.config();
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
