@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ApiService } from '../services/apiService';
@@ -6,6 +6,7 @@ import { ApiService } from '../services/apiService';
 const LoginPage: React.FC = () => {
   const location = useLocation();
   const { logout } = useAuth();
+  const [isErrorHidder, setIsErrorHidder] = useState(false);
   
   // Check for error parameters in URL
   const urlParams = new URLSearchParams(location.search);
@@ -42,8 +43,7 @@ const LoginPage: React.FC = () => {
   };
 
   const handleClearError = () => {
-    // Clear error from URL and any session data
-    window.history.replaceState({}, document.title, window.location.pathname);
+    setIsErrorHidder(true)
     logout();
   };
 
@@ -69,9 +69,11 @@ const LoginPage: React.FC = () => {
             textAlign: 'center',
             color: 'var(--brutal-white)'
           }}>
-            <div style={{fontWeight: 700, marginBottom: '15px', fontSize: '16px'}}>
-              ⚠️ ERROR: {errorMessage}
-            </div>
+            {!isErrorHidder && (
+              <div style={{fontWeight: 700, marginBottom: '15px', fontSize: '16px'}}>
+                ⚠️ ERROR: {errorMessage}
+              </div>
+            )}
             <button
               onClick={handleClearError}
               style={{
