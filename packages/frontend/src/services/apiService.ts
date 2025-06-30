@@ -1,22 +1,8 @@
 import axios from 'axios';
 import { SpotifyAlbum, SpotifyUser } from '../types/spotify';
 
-// Determine API URL based on environment
-const getApiBaseUrl = () => {
-  if (process.env.REACT_APP_API_URL) {
-    return process.env.REACT_APP_API_URL;
-  }
-  
-  // In production, use relative path
-  if (process.env.NODE_ENV === 'production') {
-    return '/api';
-  }
-  
-  // In development, use localhost
-  return 'http://127.0.0.1:3001/api';
-};
-
-const API_BASE_URL = getApiBaseUrl();
+// For monorepo setup - API is a separate Vercel project
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3001/api';
 
 console.log('API Base URL:', API_BASE_URL, 'Environment:', process.env.NODE_ENV);
 
