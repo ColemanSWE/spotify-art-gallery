@@ -1,11 +1,21 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import app from '../src/index';
 
 export default async (req: VercelRequest, res: VercelResponse) => {
   try {
-    return app(req, res);
+    console.log('Serverless function called:', req.method, req.url);
+    
+    // Import the app here to catch any import errors
+    const app = await import('../src/index');
+    console.log('App imported successfully');
+    
+    return app.default(req, res);
   } catch (error) {
     console.error('Serverless function error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 }; 
