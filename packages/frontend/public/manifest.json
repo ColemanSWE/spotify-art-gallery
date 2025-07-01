@@ -1,9 +1,15 @@
 {
-  "short_name": "Gallery",
-  "name": "Virtual Art Gallert",
-  "icons": [],
+  "short_name": "3D Gallery",
+  "name": "3D Gallery - Spotify Art Gallery",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#1a1a1a",
+  "background_color": "#1a1a1a"
 }
