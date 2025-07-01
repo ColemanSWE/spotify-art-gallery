@@ -4,8 +4,6 @@ import { SpotifyAlbum, SpotifyUser } from '../types/spotify';
 // For monorepo setup - API is a separate Vercel project
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:3001/api';
 
-console.log('API Base URL:', API_BASE_URL, 'Environment:', process.env.NODE_ENV);
-
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {

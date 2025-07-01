@@ -190,16 +190,67 @@ const VaporwaveSkybox: React.FC = () => {
 interface FirstPersonCameraProps {
   isPaused: boolean;
   onTogglePause: () => void;
+  onPointerLockChange: (hasLock: boolean) => void;
 }
 
-const FirstPersonCamera: React.FC<FirstPersonCameraProps> = ({ isPaused, onTogglePause }) => {
+const FirstPersonCamera = React.forwardRef<any, FirstPersonCameraProps>(({ isPaused, onTogglePause, onPointerLockChange }, ref) => {
   const { camera } = useThree();
   const controlsRef = useRef<any>();
+  const [hasPointerLock, setHasPointerLock] = useState(false);
+  
+  // Expose the lock method and state to parent component
+  React.useImperativeHandle(ref, () => ({
+    lock: () => {
+      if (controlsRef.current && !isPaused) {
+        try {
+          // Check if pointer lock is available and not already active
+          if (document.pointerLockElement === null) {
+            controlsRef.current.lock();
+          }
+        } catch (error) {
+          console.warn('Pointer lock request failed:', error);
+          // Retry after a longer delay if it fails
+          setTimeout(() => {
+            try {
+              if (controlsRef.current && document.pointerLockElement === null) {
+                controlsRef.current.lock();
+              }
+            } catch (retryError) {
+              console.warn('Pointer lock retry failed:', retryError);
+            }
+          }, 200);
+        }
+      }
+    },
+    forceLock: () => {
+      if (controlsRef.current) {
+        try {
+          // Check if pointer lock is available and not already active
+          if (document.pointerLockElement === null) {
+            controlsRef.current.lock();
+          }
+        } catch (error) {
+          console.warn('Force pointer lock request failed:', error);
+          // Retry after a longer delay if it fails
+          setTimeout(() => {
+            try {
+              if (controlsRef.current && document.pointerLockElement === null) {
+                controlsRef.current.lock();
+              }
+            } catch (retryError) {
+              console.warn('Force pointer lock retry failed:', retryError);
+            }
+          }, 200);
+        }
+      }
+    },
+    hasPointerLock: hasPointerLock
+  }));
   
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Don't allow movement when paused
-      if (isPaused || !controlsRef.current) return;
+      // Don't allow movement when paused OR when we don't have pointer lock
+      if (isPaused || !controlsRef.current || !hasPointerLock) return;
       
       const moveSpeed = 0.3;
       const direction = new THREE.Vector3();
@@ -241,9 +292,14 @@ const FirstPersonCamera: React.FC<FirstPersonCameraProps> = ({ isPaused, onToggl
     };
 
     const handlePointerLockChange = () => {
+      // Update pointer lock state
+      const hasLock = !!document.pointerLockElement;
+      setHasPointerLock(hasLock);
+      onPointerLockChange(hasLock);
+      
       // When pointer lock is released (ESC pressed), show pause menu
       // Only if we're not already paused (prevents loops)
-      if (!document.pointerLockElement && !isPaused) {
+      if (!hasLock && !isPaused) {
         // Small delay to prevent race conditions
         setTimeout(() => {
           if (!isPaused) {
@@ -263,7 +319,7 @@ const FirstPersonCamera: React.FC<FirstPersonCameraProps> = ({ isPaused, onToggl
   }, [camera, isPaused, onTogglePause]);
   
   return <PointerLockControls ref={controlsRef} enabled={!isPaused} />;
-};
+});
 
 const LoadingSpinner: React.FC = () => (
   <mesh>
@@ -280,14 +336,32 @@ const SpotifyGalleryScene: React.FC<SpotifyGallerySceneProps> = () => {
   const [error, setError] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<'short_term' | 'medium_term' | 'long_term'>('medium_term');
   const [isPaused, setIsPaused] = useState(false);
+  const [hasPointerLock, setHasPointerLock] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   
   const { isAuthenticated, userId, logout } = useAuth();
   const lightRef = useRef<THREE.PointLight>(null);
+  const cameraRef = useRef<any>(null);
 
   useEffect(() => {
     if (lightRef.current) {
       lightRef.current.position.set(0, GALLERY_HEIGHT - 1, 0);
     }
+    
+    // Mobile detection
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      const mobileKeywords = ['mobile', 'android', 'iphone', 'ipad', 'ipod', 'blackberry', 'windows phone'];
+      const isMobileUA = mobileKeywords.some(keyword => userAgent.includes(keyword));
+      const isTouchDevice = 'ontouchstart' in window;
+      const isSmallScreen = window.innerWidth <= 768;
+      
+      setIsMobile(isMobileUA || (isTouchDevice && isSmallScreen));
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   useEffect(() => {
@@ -303,7 +377,6 @@ const SpotifyGalleryScene: React.FC<SpotifyGallerySceneProps> = () => {
         
         const token = localStorage.getItem('jwtToken');
         if (token) {
-          console.log('Using Spotify API with JWT token');
           const response = await ApiService.getTopAlbums(token, timeRange, 20);
           setAlbums(response);
         } else {
@@ -387,19 +460,39 @@ const SpotifyGalleryScene: React.FC<SpotifyGallerySceneProps> = () => {
         backgroundColor: BRUTALIST_COLORS.WHITE,
         textAlign: 'center',
         fontFamily: 'JetBrains Mono, monospace',
-        cursor: 'crosshair'
+        cursor: 'crosshair',
+        padding: isMobile ? '20px' : '40px'
       }}>
         <h2 style={{ 
           color: BRUTALIST_COLORS.BLACK, 
           marginBottom: '20px',
-          fontSize: '3rem',
+          fontSize: isMobile ? '2rem' : '3rem',
           fontWeight: 700,
           textTransform: 'uppercase',
-          letterSpacing: '4px',
+          letterSpacing: isMobile ? '2px' : '4px',
           textShadow: `3px 3px 0px ${BRUTALIST_COLORS.YELLOW}, 6px 6px 0px ${BRUTALIST_COLORS.PINK}`
         }}>
           🎵 SPOTIFY 3D GALLERY
         </h2>
+        
+        {isMobile && (
+          <div style={{
+            backgroundColor: BRUTALIST_COLORS.YELLOW,
+            color: BRUTALIST_COLORS.BLACK,
+            border: `4px solid ${BRUTALIST_COLORS.BLACK}`,
+            boxShadow: `8px 8px 0px ${BRUTALIST_COLORS.BLACK}`,
+            padding: '20px',
+            marginBottom: '20px',
+            maxWidth: '400px'
+          }}>
+            <p style={{ fontWeight: 700, marginBottom: '10px', textTransform: 'uppercase' }}>
+              📱 MOBILE DETECTED
+            </p>
+            <p style={{ fontWeight: 700, fontSize: '14px', lineHeight: '1.4' }}>
+              This is a 3D desktop experience! You can still log in to see your albums, but visit on desktop for the full gallery.
+            </p>
+          </div>
+        )}
         <p style={{ 
           marginBottom: '30px', 
           fontSize: '18px',
@@ -488,6 +581,169 @@ const SpotifyGalleryScene: React.FC<SpotifyGallerySceneProps> = () => {
   }
 
   const artworkPositions = generateWallPositions(albums.length);
+
+  // Mobile fallback view
+  if (isMobile && isAuthenticated) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        backgroundColor: BRUTALIST_COLORS.BLACK,
+        color: BRUTALIST_COLORS.WHITE,
+        fontFamily: 'JetBrains Mono, monospace',
+        padding: '20px'
+      }}>
+        <div style={{
+          maxWidth: '600px',
+          margin: '0 auto',
+          textAlign: 'center'
+        }}>
+          <h1 style={{
+            color: BRUTALIST_COLORS.YELLOW,
+            fontSize: '2rem',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '3px',
+            marginBottom: '20px',
+            textShadow: `3px 3px 0px ${BRUTALIST_COLORS.PINK}`
+          }}>
+            🖥️ DESKTOP EXPERIENCE
+          </h1>
+          
+          <div style={{
+            backgroundColor: BRUTALIST_COLORS.WHITE,
+            color: BRUTALIST_COLORS.BLACK,
+            border: `4px solid ${BRUTALIST_COLORS.BLACK}`,
+            boxShadow: `8px 8px 0px ${BRUTALIST_COLORS.YELLOW}`,
+            padding: '30px',
+            marginBottom: '30px',
+            textAlign: 'left'
+          }}>
+            <h2 style={{
+              fontSize: '1.2rem',
+              marginBottom: '15px',
+              textTransform: 'uppercase',
+              letterSpacing: '2px'
+            }}>
+              🎵 3D GALLERY OPTIMIZED FOR DESKTOP
+            </h2>
+            <p style={{ marginBottom: '15px', lineHeight: '1.5' }}>
+              <strong>THIS IS A 3D WALKING EXPERIENCE</strong> designed for desktop with mouse and keyboard controls.
+            </p>
+            <ul style={{ marginBottom: '15px', paddingLeft: '20px', lineHeight: '1.6' }}>
+              <li><strong>MOUSE:</strong> Look around the gallery</li>
+              <li><strong>WASD:</strong> Walk through 3D space</li>
+              <li><strong>ESC:</strong> Pause and settings</li>
+            </ul>
+            <p style={{ fontWeight: 700, textTransform: 'uppercase' }}>
+              📱 Visit on desktop for the full experience!
+            </p>
+          </div>
+
+          {albums.length > 0 && (
+            <>
+              <h3 style={{
+                color: BRUTALIST_COLORS.CYAN,
+                fontSize: '1.2rem',
+                marginBottom: '20px',
+                textTransform: 'uppercase',
+                letterSpacing: '2px'
+              }}>
+                YOUR TOP ALBUMS ({timeRange.replace('_', ' ').toUpperCase()})
+              </h3>
+              
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                gap: '15px',
+                marginBottom: '30px'
+              }}>
+                {albums.slice(0, 12).map((album, index) => (
+                  <div key={album.id} style={{
+                    backgroundColor: BRUTALIST_COLORS.WHITE,
+                    border: `3px solid ${BRUTALIST_COLORS.BLACK}`,
+                    boxShadow: `4px 4px 0px ${BRUTALIST_COLORS.BLACK}`,
+                    padding: '10px'
+                  }}>
+                    <img 
+                      src={album.images[1]?.url || album.images[0]?.url} 
+                      alt={album.name}
+                      style={{ 
+                        width: '100%', 
+                        height: 'auto',
+                        display: 'block',
+                        marginBottom: '8px'
+                      }}
+                    />
+                    <div style={{
+                      fontSize: '0.8rem',
+                      fontWeight: 700,
+                      textTransform: 'uppercase',
+                      color: BRUTALIST_COLORS.BLACK,
+                      lineHeight: '1.2'
+                    }}>
+                      {album.name}
+                    </div>
+                    <div style={{
+                      fontSize: '0.7rem',
+                      color: BRUTALIST_COLORS.BLACK,
+                      marginTop: '4px'
+                    }}>
+                      {album.artists[0]?.name}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <select
+              value={timeRange}
+              onChange={(e) => setTimeRange(e.target.value as any)}
+              style={{
+                backgroundColor: BRUTALIST_COLORS.GREEN,
+                color: BRUTALIST_COLORS.BLACK,
+                border: `4px solid ${BRUTALIST_COLORS.BLACK}`,
+                boxShadow: `4px 4px 0px ${BRUTALIST_COLORS.BLACK}`,
+                padding: '12px 16px',
+                fontSize: '14px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                fontFamily: 'JetBrains Mono, monospace',
+                cursor: 'pointer'
+              }}
+            >
+              <option value="short_term">LAST 4 WEEKS</option>
+              <option value="medium_term">LAST 6 MONTHS</option>
+              <option value="long_term">ALL TIME</option>
+            </select>
+            
+            <button
+              onClick={() => {
+                if (window.confirm('LOG OUT AND TRY A DIFFERENT ACCOUNT?')) {
+                  logout();
+                }
+              }}
+              style={{
+                backgroundColor: BRUTALIST_COLORS.PINK,
+                color: BRUTALIST_COLORS.BLACK,
+                border: `4px solid ${BRUTALIST_COLORS.BLACK}`,
+                boxShadow: `4px 4px 0px ${BRUTALIST_COLORS.BLACK}`,
+                padding: '12px 16px',
+                fontSize: '14px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                fontFamily: 'JetBrains Mono, monospace',
+                cursor: 'pointer'
+              }}
+            >
+              🚪 LOGOUT
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isAuthenticated && !loading && !error && albums.length === 0) {
     return (
@@ -755,6 +1011,30 @@ const SpotifyGalleryScene: React.FC<SpotifyGallerySceneProps> = () => {
         </div>
       )}
 
+      {!isPaused && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 999,
+          color: BRUTALIST_COLORS.BLACK,
+          fontSize: '24px',
+          backgroundColor: BRUTALIST_COLORS.YELLOW,
+          border: `4px solid ${BRUTALIST_COLORS.BLACK}`,
+          boxShadow: `8px 8px 0px ${BRUTALIST_COLORS.BLACK}`,
+          padding: '20px',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '2px',
+          pointerEvents: 'none',
+          opacity: hasPointerLock ? 0 : 1,
+          transition: 'opacity 0.3s ease'
+        }}>
+          CLICK TO ENTER GALLERY
+        </div>
+      )}
+
       {/* Canvas with transparent background to show container background */}
       <Canvas 
         camera={{ position: [0, 2, 12], fov: 75 }}
@@ -767,8 +1047,10 @@ const SpotifyGalleryScene: React.FC<SpotifyGallerySceneProps> = () => {
         <directionalLight position={[10, 10, 10]} intensity={1} />
         
         <FirstPersonCamera 
+          ref={cameraRef}
           isPaused={isPaused} 
-          onTogglePause={() => setIsPaused(!isPaused)} 
+          onTogglePause={() => setIsPaused(!isPaused)}
+          onPointerLockChange={setHasPointerLock}
         />
         
         <Suspense fallback={null}>

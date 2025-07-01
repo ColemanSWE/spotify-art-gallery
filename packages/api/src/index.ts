@@ -20,8 +20,9 @@ const app = express();
 
 // Configure CORS to allow frontend domain
 const allowedOrigins = [
-  'http://localhost:3000', // Local development
-  'https://spotify-art-gallery-frontend.vercel.app', // Production frontend
+  'http://localhost:3000',
+  'https://spotify-art-gallery-frontend.vercel.app',
+  'https://www.3dgallery.online'
 ];
 
 // Add frontend URL from environment if it exists

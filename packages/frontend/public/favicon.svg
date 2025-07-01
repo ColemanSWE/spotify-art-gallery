@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" fill="#1a1a1a"/>
+  
+  <!-- 3D cube representing gallery -->
+  <g transform="translate(8, 6)">
+    <!-- Front face -->
+    <rect x="0" y="8" width="12" height="12" fill="#4a9eff" stroke="#ffffff" stroke-width="0.5"/>
+    
+    <!-- Right face (3D effect) -->
+    <polygon points="12,8 16,4 16,16 12,20" fill="#2563eb" stroke="#ffffff" stroke-width="0.5"/>
+    
+    <!-- Top face (3D effect) -->
+    <polygon points="0,8 4,4 16,4 12,8" fill="#60a5fa" stroke="#ffffff" stroke-width="0.5"/>
+    
+    <!-- Small album cover detail -->
+    <rect x="2" y="10" width="8" height="8" fill="#f59e0b" stroke="#ffffff" stroke-width="0.3"/>
+    <circle cx="6" cy="14" r="1.5" fill="#1a1a1a"/>
+  </g>
+</svg> 
