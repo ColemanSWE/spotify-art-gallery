@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
-import { Canvas, useLoader, useThree } from '@react-three/fiber';
+import { Canvas, useLoader, useThree, useFrame } from '@react-three/fiber';
 import { Text, PointerLockControls } from '@react-three/drei';
 import { TextureLoader } from 'three';
 import * as THREE from 'three';
@@ -197,6 +197,7 @@ const FirstPersonCamera = React.forwardRef<any, FirstPersonCameraProps>(({ isPau
   const { camera } = useThree();
   const controlsRef = useRef<any>();
   const [hasPointerLock, setHasPointerLock] = useState(false);
+  const keysPressed = useRef<{[key: string]: boolean}>({});
   
   // Expose the lock method and state to parent component
   React.useImperativeHandle(ref, () => ({
@@ -247,48 +248,81 @@ const FirstPersonCamera = React.forwardRef<any, FirstPersonCameraProps>(({ isPau
     hasPointerLock: hasPointerLock
   }));
   
+  // Clear keys when paused
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Don't allow movement when paused OR when we don't have pointer lock
-      if (isPaused || !controlsRef.current || !hasPointerLock) return;
+    if (isPaused) {
+      keysPressed.current = {};
+    }
+  }, [isPaused]);
+
+  // Continuous movement with animation frame
+  useFrame((state, delta) => {
+    // Don't allow movement when paused OR when we don't have pointer lock
+    if (isPaused || !controlsRef.current || !hasPointerLock) return;
+    
+    const moveSpeed = 5.0; // Units per second
+    const frameSpeed = moveSpeed * delta; // Movement this frame
+    const direction = new THREE.Vector3();
+    let moved = false;
+    
+    // Forward/Backward movement
+    if (keysPressed.current['KeyW'] || keysPressed.current['KeyS']) {
+      camera.getWorldDirection(direction);
+      direction.y = 0;
+      direction.normalize();
       
-      const moveSpeed = 0.3;
-      const direction = new THREE.Vector3();
-      
-      switch (event.code) {
-        case 'KeyW':
-          camera.getWorldDirection(direction);
-          direction.y = 0;
-          direction.normalize();
-          camera.position.add(direction.multiplyScalar(moveSpeed));
-          break;
-        case 'KeyS':
-          camera.getWorldDirection(direction);
-          direction.y = 0;
-          direction.normalize();
-          camera.position.add(direction.multiplyScalar(-moveSpeed));
-          break;
-        case 'KeyD':
-          camera.getWorldDirection(direction);
-          direction.y = 0;
-          direction.normalize();
-          const left = new THREE.Vector3(-direction.z, 0, direction.x);
-          camera.position.add(left.multiplyScalar(moveSpeed));
-          break;
-        case 'KeyA':
-          camera.getWorldDirection(direction);
-          direction.y = 0;
-          direction.normalize();
-          const right = new THREE.Vector3(direction.z, 0, -direction.x);
-          camera.position.add(right.multiplyScalar(moveSpeed));
-          break;
+      if (keysPressed.current['KeyW']) {
+        camera.position.add(direction.multiplyScalar(frameSpeed));
+        moved = true;
       }
+      if (keysPressed.current['KeyS']) {
+        camera.position.add(direction.multiplyScalar(-frameSpeed));
+        moved = true;
+      }
+    }
+    
+    // Left/Right movement
+    if (keysPressed.current['KeyA'] || keysPressed.current['KeyD']) {
+      camera.getWorldDirection(direction);
+      direction.y = 0;
+      direction.normalize();
       
-      // Collision detection
+      if (keysPressed.current['KeyA']) {
+        const right = new THREE.Vector3(direction.z, 0, -direction.x);
+        camera.position.add(right.multiplyScalar(frameSpeed));
+        moved = true;
+      }
+      if (keysPressed.current['KeyD']) {
+        const left = new THREE.Vector3(-direction.z, 0, direction.x);
+        camera.position.add(left.multiplyScalar(frameSpeed));
+        moved = true;
+      }
+    }
+    
+    // Apply collision detection if we moved
+    if (moved) {
       const margin = 2;
       camera.position.x = Math.max(-GALLERY_WIDTH/2 + margin, Math.min(GALLERY_WIDTH/2 - margin, camera.position.x));
       camera.position.z = Math.max(-GALLERY_DEPTH/2 + margin, Math.min(GALLERY_DEPTH/2 - margin, camera.position.z));
       camera.position.y = Math.max(1, Math.min(GALLERY_HEIGHT - 1, camera.position.y));
+    }
+  });
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Track key presses for movement
+      if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(event.code)) {
+        keysPressed.current[event.code] = true;
+        event.preventDefault();
+      }
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      // Stop tracking key when released
+      if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(event.code)) {
+        keysPressed.current[event.code] = false;
+        event.preventDefault();
+      }
     };
 
     const handlePointerLockChange = () => {
@@ -296,6 +330,11 @@ const FirstPersonCamera = React.forwardRef<any, FirstPersonCameraProps>(({ isPau
       const hasLock = !!document.pointerLockElement;
       setHasPointerLock(hasLock);
       onPointerLockChange(hasLock);
+      
+      // Clear all key states when losing pointer lock
+      if (!hasLock) {
+        keysPressed.current = {};
+      }
       
       // When pointer lock is released (ESC pressed), show pause menu
       // Only if we're not already paused (prevents loops)
@@ -310,11 +349,15 @@ const FirstPersonCamera = React.forwardRef<any, FirstPersonCameraProps>(({ isPau
     };
     
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
     document.addEventListener('pointerlockchange', handlePointerLockChange);
     
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
       document.removeEventListener('pointerlockchange', handlePointerLockChange);
+      // Clear key states on cleanup
+      keysPressed.current = {};
     };
   }, [camera, isPaused, onTogglePause]);
   
@@ -1005,7 +1048,7 @@ const SpotifyGalleryScene: React.FC<SpotifyGallerySceneProps> = () => {
         }}>
           <div style={{marginBottom: '10px', color: BRUTALIST_COLORS.YELLOW}}>CONTROLS:</div>
           <div>CLICK TO ENTER GALLERY</div>
-          <div>WASD - MOVE AROUND</div>
+          <div>WASD - SMOOTH MOVEMENT</div>
           <div>MOUSE - LOOK AROUND</div>
           <div>ESC - PAUSE MENU</div>
         </div>

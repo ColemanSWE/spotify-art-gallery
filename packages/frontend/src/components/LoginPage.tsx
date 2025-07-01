@@ -7,6 +7,7 @@ const LoginPage: React.FC = () => {
   const location = useLocation();
   const { logout } = useAuth();
   const [isErrorHidder, setIsErrorHidder] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Check for error parameters in URL
   const urlParams = new URLSearchParams(location.search);
@@ -26,24 +27,33 @@ const LoginPage: React.FC = () => {
   };
 
   const handleLogin = async () => {
+    if (isLoading) return; // Prevent multiple clicks
+    
     try {
+      setIsLoading(true);
+      
       // Clear any previous session data first
       logout();
       
       const data = await ApiService.getSpotifyAuthUrl();
       
       if (data.authUrl) {
-        window.location.href = data.authUrl;
+        // Small delay to show loading state before redirect
+        setTimeout(() => {
+          window.location.href = data.authUrl;
+        }, 500);
       } else {
         console.error('No auth URL received');
+        setIsLoading(false);
       }
     } catch (error) {
       console.error('Failed to get Spotify auth URL:', error);
+      setIsLoading(false);
     }
   };
 
   const handleClearError = () => {
-    setIsErrorHidder(true)
+    setIsErrorHidder(true);
     logout();
   };
 
@@ -119,9 +129,39 @@ const LoginPage: React.FC = () => {
         
         <button 
           onClick={handleLogin}
+          disabled={isLoading}
           className="login-button"
+          style={{
+            opacity: isLoading ? 0.7 : 1,
+            cursor: isLoading ? 'not-allowed' : 'crosshair',
+            transform: isLoading ? 'none' : undefined,
+            transition: 'all 0.2s cubic-bezier(0.76, 0, 0.24, 1)',
+            backgroundColor: isLoading ? 'var(--brutal-cyan)' : undefined,
+            pointerEvents: isLoading ? 'none' : 'auto'
+          }}
         >
-          ▶ CONNECT SPOTIFY ◀
+          {isLoading ? (
+            <>
+              <span style={{
+                display: 'inline-block',
+                animation: 'spin 1s linear infinite',
+                marginRight: '8px'
+              }}>
+                🔄
+              </span>
+              CONNECTING TO SPOTIFY...
+              <style>
+                {`
+                  @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                  }
+                `}
+              </style>
+            </>
+          ) : (
+            '▶ CONNECT SPOTIFY ◀'
+          )}
         </button>
         
         <div style={{
