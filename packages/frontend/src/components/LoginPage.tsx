@@ -144,20 +144,11 @@ const LoginPage: React.FC = () => {
             <>
               <span style={{
                 display: 'inline-block',
-                animation: 'spin 1s linear infinite',
                 marginRight: '8px'
               }}>
                 🔄
               </span>
               CONNECTING TO SPOTIFY...
-              <style>
-                {`
-                  @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                  }
-                `}
-              </style>
             </>
           ) : (
             '▶ CONNECT SPOTIFY ◀'
