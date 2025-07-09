@@ -55,11 +55,9 @@ async function initializeDatabase(): Promise<void> {
   dbInitPromise = (async () => {
     try {
       await sequelize.authenticate();
-      console.log('Database connection has been established successfully.');
       
       // Sync models to create tables
       await sequelize.sync({ alter: false, force: false });
-      console.log('Database tables have been synchronized.');
       dbInitialized = true;
     } catch (error) {
       console.error('Unable to connect to the database or sync tables:', error);

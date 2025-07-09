@@ -81,10 +81,6 @@ export const FirstPersonCamera = React.forwardRef<any, FirstPersonCameraProps>((
     const cappedDelta = Math.min(delta, MAX_DELTA_TIME);
     const frameSpeed = MOVE_SPEED * cappedDelta;
     
-    // Debug logging for deployment issues
-    if (Object.values(keysPressed.current).some(pressed => pressed)) {
-      console.log('Movement frame:', { delta, cappedDelta, frameSpeed, keys: keysPressed.current });
-    }
     const direction = new THREE.Vector3();
     let moved = false;
     
@@ -136,7 +132,6 @@ export const FirstPersonCamera = React.forwardRef<any, FirstPersonCameraProps>((
       if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(event.code)) {
         keysPressed.current[event.code] = true;
         event.preventDefault();
-        console.log('Key pressed:', event.code, keysPressed.current);
       }
     };
 
@@ -145,7 +140,6 @@ export const FirstPersonCamera = React.forwardRef<any, FirstPersonCameraProps>((
       if (['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(event.code)) {
         keysPressed.current[event.code] = false;
         event.preventDefault();
-        console.log('Key released:', event.code, keysPressed.current);
       }
     };
 
@@ -176,16 +170,12 @@ export const FirstPersonCamera = React.forwardRef<any, FirstPersonCameraProps>((
     window.addEventListener('keyup', handleKeyUp);
     document.addEventListener('pointerlockchange', handlePointerLockChange);
     
-    // Debug: Verify event listeners are attached
-    console.log('Event listeners attached for movement controls');
-    
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
       document.removeEventListener('pointerlockchange', handlePointerLockChange);
       // Clear key states on cleanup
       keysPressed.current = {};
-      console.log('Event listeners removed for movement controls');
     };
   }, [camera, isPaused, onTogglePause]);
   
