@@ -1,9 +1,2 @@
-export { AlbumArtwork } from './AlbumArtwork';
-export { VaporwaveGalleryStructure } from './VaporwaveGalleryStructure';
-export { VaporwaveSkybox } from './VaporwaveSkybox';
-export { FirstPersonCamera } from './FirstPersonCamera';
-export { LoadingSpinner } from './LoadingSpinner';
-export { PauseMenu } from './PauseMenu';
-export { Instructions } from './Instructions';
-export { MobileFallback } from './MobileFallback';
-export { AuthenticationViews } from './AuthenticationViews'; 
+export { PortfolioGalleryScene } from './PortfolioGalleryScene';
+export { PortfolioItem } from './PortfolioItem'; 

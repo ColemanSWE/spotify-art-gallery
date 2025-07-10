@@ -73,7 +73,7 @@ const SpotifyGalleryScene: React.FC<SpotifyGallerySceneProps> = () => {
   }, [isAuthenticated, userId, timeRange]);
 
   const artworkPositions = generateWallPositions(albums.length);
-
+    
   // Check if we should show authentication views
   const shouldShowAuthViews = !isAuthenticated || error || (isAuthenticated && !loading && !error && albums.length === 0);
   

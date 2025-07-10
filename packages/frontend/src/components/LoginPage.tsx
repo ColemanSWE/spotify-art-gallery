@@ -80,10 +80,11 @@ const LoginPage: React.FC = () => {
             color: 'var(--brutal-white)'
           }}>
             {!isErrorHidder && (
+              <>
               <div style={{fontWeight: 700, marginBottom: '15px', fontSize: '16px'}}>
                 ⚠️ ERROR: {errorMessage}
               </div>
-            )}
+            
             <button
               onClick={handleClearError}
               style={{
@@ -102,7 +103,10 @@ const LoginPage: React.FC = () => {
             >
               CLEAR ERROR & RETRY
             </button>
+            </>
+        )}
           </div>
+          
         )}
         
         <div style={{

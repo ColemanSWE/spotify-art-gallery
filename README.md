@@ -1,100 +1,129 @@
-# Spotify 3D Art Gallery
+# Digital Portfolio Gallery
 
-A 3D art gallery application that allows users to sign in to Spotify, retrieve their top albums, and display them as 3D assets with album covers as textures.
-
-## Project Structure
-
-This is a monorepo containing both the backend API and frontend application:
-
-```
-spotify-3d-art-gallery/
-├── packages/
-│   ├── api/           # Backend API (Node.js/Express/TypeScript)
-│   └── frontend/      # Frontend React App (React/TypeScript)
-├── package.json       # Root package.json with workspace configuration
-└── README.md          # This file
-```
+A 3D digital portfolio showcase built with React, Three.js, and Node.js. Create immersive gallery spaces to display your work, achievements, and projects in a brutalist-inspired 3D environment.
 
 ## Features
 
-- **Spotify Integration**: Sign in with Spotify and retrieve user's top albums
-- **3D Visualization**: Display albums as 3D assets in a virtual gallery
-- **Album Cover Textures**: Use actual album artwork as textures on 3D objects
-- **RESTful API**: Backend API for handling Spotify authentication and data
+- **3D Portfolio Galleries**: Walk through immersive 3D spaces showcasing your work
+- **Multiple Room Types**: Organize content by achievements, projects, influences, skills, experience, and personal items
+- **Brutalist Design**: Clean, geometric aesthetic with bold colors and typography
+- **Interactive Navigation**: First-person camera controls with smooth movement
+- **User Authentication**: Secure user accounts and gallery management
+- **Responsive Design**: Works on desktop and mobile devices
 
-## Technology Stack
+## Tech Stack
 
-### Backend (`packages/api`)
-- Node.js
-- Express
+### Frontend
+- React 18 with TypeScript
+- Three.js for 3D graphics
+- React Three Fiber for React/Three.js integration
+- React Three Drei for 3D utilities
+- Axios for API communication
+
+### Backend
+- Node.js with Express
 - TypeScript
-- Jest (testing)
-- MongoDB (database)
-
-### Frontend (`packages/frontend`)
-- React
-- TypeScript
-- Three.js (3D graphics)
-- Create React App
+- Sequelize ORM with SQLite/PostgreSQL
+- JWT authentication
+- RESTful API design
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v16 or higher)
+- Node.js 18+ 
 - npm or yarn
-- MongoDB (for the API)
 
 ### Installation
 
-1. Clone the repository
-2. Install dependencies for all packages:
-   ```bash
-   npm run install:all
-   ```
-
-### Development
-
-To run both the API and frontend in development mode:
+1. Clone the repository:
 ```bash
+git clone <repository-url>
+cd 3dArtProject
+```
+
+2. Install dependencies for both frontend and backend:
+```bash
+npm install
+cd packages/frontend && npm install
+cd ../api && npm install
+```
+
+3. Set up environment variables:
+```bash
+# In packages/api/.env
+PORT=3001
+JWT_SECRET=your-secret-key
+DATABASE_URL=sqlite:./database.sqlite
+
+# In packages/frontend/.env
+REACT_APP_API_URL=http://localhost:3001/api
+```
+
+4. Start the development servers:
+```bash
+# Start backend (from packages/api)
 npm run dev
+
+# Start frontend (from packages/frontend) 
+npm start
 ```
 
-To run them individually:
-```bash
-# Run API only
-npm run dev:api
+## Usage
 
-# Run frontend only
-npm run dev:frontend
-```
+### Creating Galleries
+1. Register an account
+2. Create a new gallery with a title, description, and room type
+3. Add portfolio items with images, descriptions, and metadata
+4. Customize the 3D positioning and styling
 
-### Building
+### Gallery Types
+- **Achievements**: Awards, certifications, milestones
+- **Projects**: Code repositories, applications, designs
+- **Influences**: Books, mentors, inspirations
+- **Skills**: Technical abilities, languages, tools
+- **Experience**: Work history, internships, roles
+- **Personal**: Hobbies, interests, life events
 
-To build both packages:
-```bash
-npm run build
-```
+### Navigation
+- **Mouse**: Look around the 3D space
+- **Scroll**: Zoom in/out
+- **WASD**: Move around (when first-person mode is enabled)
+- **ESC**: Pause menu
 
-### Testing
+## API Endpoints
 
-To run tests for both packages:
-```bash
-npm run test
-```
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/me` - Get current user
 
-## Package Details
+### Galleries
+- `GET /api/galleries/public` - Get public galleries
+- `GET /api/galleries/my-galleries` - Get user's galleries
+- `GET /api/galleries/:id` - Get specific gallery
+- `POST /api/galleries` - Create gallery
+- `PUT /api/galleries/:id` - Update gallery
+- `DELETE /api/galleries/:id` - Delete gallery
 
-### API (`packages/api`)
-- **Port**: 3001 (default)
-- **Database**: MongoDB
-- **Authentication**: Spotify OAuth
-- **Endpoints**: User management, artwork retrieval, gallery management
+### Artworks
+- `GET /api/artworks/my-artworks` - Get user's artworks
+- `POST /api/artworks` - Create artwork
+- `GET /api/artworks/:id` - Get specific artwork
+- `PUT /api/artworks/:id` - Update artwork
+- `DELETE /api/artworks/:id` - Delete artwork
 
-### Frontend (`packages/frontend`)
-- **Port**: 3000 (default)
-- **Framework**: React with TypeScript
-- **3D Library**: Three.js
-- **Styling**: CSS modules
+## Deployment
+
+### Frontend (Vercel)
+1. Connect your GitHub repository to Vercel
+2. Set environment variables in Vercel dashboard
+3. Deploy automatically on push to main branch
+
+### Backend (Railway/Render)
+1. Connect your GitHub repository
+2. Set environment variables
+3. Deploy and get the API URL
+4. Update frontend environment variables
 
 ## Contributing
 
@@ -102,10 +131,8 @@ npm run test
 2. Create a feature branch
 3. Make your changes
 4. Add tests if applicable
-5. Commit your changes
-6. Push to your fork
-7. Create a Pull Request
+5. Submit a pull request
 
 ## License
 
-MIT 
+MIT License - see LICENSE file for details 

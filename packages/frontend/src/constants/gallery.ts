@@ -13,7 +13,8 @@ export const BRUTALIST_COLORS = {
   BLUE: '#0000ff',
   GREEN: '#00ff00',
   PINK: '#ff00ff',
-  CYAN: '#00ffff'
+  CYAN: '#00ffff',
+  GRAY: '#808080'
 } as const;
 
 // Movement and interaction constants

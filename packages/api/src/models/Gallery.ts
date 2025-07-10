@@ -1,12 +1,32 @@
-import { DataTypes, Model } from 'sequelize';
+import { DataTypes, Model, Optional } from 'sequelize';
 import sequelize from '../config/database';
-import Artwork from './Artwork';
 
-class Gallery extends Model {
+interface GalleryAttributes {
+  id: number;
+  userId: number;
+  title: string;
+  description: string;
+  roomType: 'achievements' | 'projects' | 'influences' | 'skills' | 'experience' | 'personal';
+  isPublic: boolean;
+  theme: 'brutalist' | 'minimal' | 'dark' | 'warm';
+  visitCount: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+interface GalleryCreationAttributes extends Optional<GalleryAttributes, 'id' | 'visitCount' | 'createdAt' | 'updatedAt'> {}
+
+class Gallery extends Model<GalleryAttributes, GalleryCreationAttributes> implements GalleryAttributes {
   public id!: number;
-  public name!: string;
+  public userId!: number;
+  public title!: string;
   public description!: string;
-  public createdBy!: number;
+  public roomType!: 'achievements' | 'projects' | 'influences' | 'skills' | 'experience' | 'personal';
+  public isPublic!: boolean;
+  public theme!: 'brutalist' | 'minimal' | 'dark' | 'warm';
+  public visitCount!: number;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
 Gallery.init(
@@ -16,25 +36,47 @@ Gallery.init(
       autoIncrement: true,
       primaryKey: true,
     },
-    name: {
-      type: new DataTypes.STRING(128),
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Users',
+        key: 'id',
+      },
+    },
+    title: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
     description: {
-      type: new DataTypes.STRING(256),
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    roomType: {
+      type: DataTypes.ENUM('achievements', 'projects', 'influences', 'skills', 'experience', 'personal'),
       allowNull: false,
     },
-    createdBy: {
+    isPublic: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
+    theme: {
+      type: DataTypes.ENUM('brutalist', 'minimal', 'dark', 'warm'),
+      allowNull: false,
+      defaultValue: 'brutalist',
+    },
+    visitCount: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      defaultValue: 0,
     },
   },
   {
-    tableName: 'galleries',
     sequelize,
-  },
+    tableName: 'galleries',
+  }
 );
 
-Gallery.belongsToMany(Artwork, { through: 'GalleryArtworks' });
-
 export default Gallery;
+
